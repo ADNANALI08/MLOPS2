@@ -1,0 +1,43 @@
+@Library('mlops-shared-lib') _
+
+pipeline {
+    agent any
+    environment {
+        MLFLOW_TRACKING_URI = "http://localhost:5000"
+    }
+    stages {
+        stage('Data Ingest') {
+            steps { script { mlUtils.ingestData() } }
+        }
+        stage('Model Train') {
+            steps { script { mlUtils.trainModel() } }
+        }
+        stage('Model Deploy - MLflow') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.deployModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Model Test') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.testModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Save Model - Challenger') {
+            steps { script { mlUtils.registerModel('Challenger') } }
+        }
+    }
+    post {
+        success {
+            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }
+        }
+        failure {
+            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }
+        }
+    }
+}
