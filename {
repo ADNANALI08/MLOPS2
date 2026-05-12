@@ -1,0 +1,62 @@
+Script started on 2026-05-12 22:21:25+05:00 [TERM="xterm-256color" TTY="/dev/pts/2" COLUMNS="156" LINES="41"]
+
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ 
+[?2004l[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd MLOPS2[Kmlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit push origin dev[Kcommit -m "Revert threshold back to 0.85"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cadd .[Ksed -i 's/THRESHOLD = 0.99/THRESHOLD = 0.85/' src/test_model.py[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit add .[Kcommit -m "Revert threshold back to 0.85"[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[26Ppush origin devmlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccd MLOPS2[Kmlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlruns[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[K[7mcat > Jenkinsfile.dev << 'EOF'[27mcat > Jenkinsfile.dev << 'EOF'
+[?2004l[?2004h> [7mpipeline {[27m
+[7m    agent any[27m
+[7m    environment {[27m
+[7m        MLFLOW_TRACKING_URI = "http://localhost:5000"[27m
+[7m    }[27m
+[7m    stages {[27m
+[7m        stage('Data Ingest') {[27m
+[7m            steps { script { mlUtils.ingestData() } }[27m
+[7m        }[27m
+[7m        stage('Model Train') {[27m
+[7m            steps { script { mlUtils.trainModel() } }[27m
+[7m        }[27m
+[7m        stage('Model Deploy - MLflow') {[27m
+[7m            steps {[27m
+[7m                script {[27m
+[7m                    def runId = mlUtils.getRunId()[27m
+[7m                    mlUtils.deployModel("runs:/${runId}/model")[27m
+[7m                }[27m
+[7m            }[27m
+[7m        }[27m
+[7m        stage('Model Test') {[27m
+[7m            steps {[27m
+[7m                script {[27m
+[7m                    def runId = mlUtils.getRunId()[27m
+[7m                    mlUtils.testModel("runs:/${runId}/model")[27m
+[7m                }[27m
+[7m            }[27m
+[7m        }[27m
+[7m        stage('Save Model - Challenger') {[27m
+[7m            steps { script { mlUtils.registerModel('Challenger') } }[27m
+[7m        }[27m
+[7m    }[27m
+[7m    post {[27m
+[7m        success {[27m
+[7m            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }[27m
+[7m        }[27m
+[7m        failure {[27m
+[7m            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }[27m
+[7m        }[27m
+[7m    }[27m
+[7m}[27m
+[7mEOF[27m[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[Apipeline {
+    agent any
+    environment {
+        MLFLOW_TRACKING_URI = "http://localhost:5000"
+    }
+    stages {
+        stage('Data Ingest') {
+            steps { script { mlUtils.ingestData() } }
+        }
+        stage('Model Train') {
+            steps { script { mlUtils.trainModel() } }
+        }
+        stage('Model Deploy - MLflow') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.deployModel(
