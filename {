@@ -59,4 +59,171 @@ Script started on 2026-05-12 22:21:25+05:00 [TERM="xterm-256color" TTY="/dev/pts
             steps {
                 script {
                     def runId = mlUtils.getRunId()
-                    mlUtils.deployModel(
+                    mlUtils.deployModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Model Test') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.testModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Save Model - Challenger') {
+            steps { script { mlUtils.registerModel('Challenger') } }
+        }
+    }
+    post {
+        success {
+            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }
+        }
+        failure {
+            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }
+        }
+    }
+}
+EOF
+[?2004l[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mcat > Jenkinsfile << 'EOF'[27mcat > Jenkinsfile << 'EOF'
+[?2004l[?2004h> [7m@Library('mlops-shared-lib') _[27m
+
+[7mnode {[27m
+[7m    checkout scm[27m
+[7m    def jenkinsfile_to_load = ""[27m
+
+[7m    if (env.BRANCH_NAME == 'dev') {[27m
+[7m        jenkinsfile_to_load = "Jenkinsfile.dev"[27m
+[7m    } else if (env.BRANCH_NAME == 'main') {[27m
+[7m        jenkinsfile_to_load = "Jenkinsfile.preprod"[27m
+[7m    } else if (env.TAG_NAME?.startsWith('v')) {[27m
+[7m        jenkinsfile_to_load = "Jenkinsfile.prod"[27m
+[7m    } else {[27m
+[7m        currentBuild.result = 'ABORTED'[27m
+[7m        error("No pipeline defined for branch: ${env.BRANCH_NAME}")[27m
+[7m    }[27m
+
+[7m    load jenkinsfile_to_load[27m
+[7m}[27m
+[7mEOF[27m[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A[A@Library('mlops-shared-lib') _
+
+node {
+    checkout scm
+    def jenkinsfile_to_load = ""
+
+    if (env.BRANCH_NAME == 'dev') {
+        jenkinsfile_to_load = "Jenkinsfile.dev"
+    } else if (env.BRANCH_NAME == 'main') {
+        jenkinsfile_to_load = "Jenkinsfile.preprod"
+    } else if (env.TAG_NAME?.startsWith('v')) {
+        jenkinsfile_to_load = "Jenkinsfile.prod"
+    } else {
+        currentBuild.result = 'ABORTED'
+        error("No pipeline defined for branch: ${env.BRANCH_NAME}")
+    }
+
+    load jenkinsfile_to_load
+}
+EOF
+[?2004l[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit add .[27mgit add .
+[?2004l[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit commit -m "Fix @Library placement in Jenkinsfiles"[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit commit -m "Fix @Library placement in Jenkinsfiles"
+[?2004l[dev bc865f6] Fix @Library placement in Jenkinsfiles
+ 3 files changed, 72 insertions(+), 19 deletions(-)
+ create mode 100644 {
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit push origin dev[27m
+[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit push origin dev
+[A
+[?2004lUsername for 'https://github.com': ADNANALI08
+Password for 'https://ADNANALI08@github.com': 
+Enumerating objects: 8, done.
+Counting objects:  12% (1/8)Counting objects:  25% (2/8)Counting objects:  37% (3/8)Counting objects:  50% (4/8)Counting objects:  62% (5/8)Counting objects:  75% (6/8)Counting objects:  87% (7/8)Counting objects: 100% (8/8)Counting objects: 100% (8/8), done.
+Delta compression using up to 8 threads
+Compressing objects:  20% (1/5)Compressing objects:  40% (2/5)Compressing objects:  60% (3/5)Compressing objects:  80% (4/5)Compressing objects: 100% (5/5)Compressing objects: 100% (5/5), done.
+Writing objects:  20% (1/5)Writing objects:  40% (2/5)Writing objects:  60% (3/5)Writing objects:  80% (4/5)Writing objects: 100% (5/5)Writing objects: 100% (5/5), 1.42 KiB | 729.00 KiB/s, done.
+Total 5 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas:   0% (0/3)[Kremote: Resolving deltas:  33% (1/3)[Kremote: Resolving deltas:  66% (2/3)[Kremote: Resolving deltas: 100% (3/3)[Kremote: Resolving deltas: 100% (3/3), completed with 3 local objects.[K
+To https://github.com/ADNANALI08/MLOPS2.git
+   fdff2a5..bc865f6  dev -> dev
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mcat ~/MLOPS2/Jenkinsfile[27mcat ~/MLOPS2/Jenkinsfile
+[?2004l@Library('mlops-shared-lib') _
+
+node {
+    checkout scm
+    def jenkinsfile_to_load = ""
+
+    if (env.BRANCH_NAME == 'dev') {
+        jenkinsfile_to_load = "Jenkinsfile.dev"
+    } else if (env.BRANCH_NAME == 'main') {
+        jenkinsfile_to_load = "Jenkinsfile.preprod"
+    } else if (env.TAG_NAME?.startsWith('v')) {
+        jenkinsfile_to_load = "Jenkinsfile.prod"
+    } else {
+        currentBuild.result = 'ABORTED'
+        error("No pipeline defined for branch: ${env.BRANCH_NAME}")
+    }
+
+    load jenkinsfile_to_load
+}
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mcat ~/MLOPS2/Jenkinsfile.dev[27mcat ~/MLOPS2/Jenkinsfile.dev
+[?2004lpipeline {
+    agent any
+    environment {
+        MLFLOW_TRACKING_URI = "http://localhost:5000"
+    }
+    stages {
+        stage('Data Ingest') {
+            steps { script { mlUtils.ingestData() } }
+        }
+        stage('Model Train') {
+            steps { script { mlUtils.trainModel() } }
+        }
+        stage('Model Deploy - MLflow') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.deployModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Model Test') {
+            steps {
+                script {
+                    def runId = mlUtils.getRunId()
+                    mlUtils.testModel("runs:/${runId}/model")
+                }
+            }
+        }
+        stage('Save Model - Challenger') {
+            steps { script { mlUtils.registerModel('Challenger') } }
+        }
+    }
+    post {
+        success {
+            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }
+        }
+        failure {
+            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }
+        }
+    }
+}
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit checkout dev[27mgit checkout dev
+[?2004lM	{
+Already on 'dev'
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit commit --allow-empty -m "Trigger after shared lib fix"[27m[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cgit commit --allow-empty -m "Trigger after shared lib fix"#[K
+[?2004l[dev 4ac8c48] Trigger after shared lib fix
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit push origin dev[27mgit push origin dev
+[?2004lUsername for 'https://github.com': ADNANALI08
+Password for 'https://ADNANALI08@github.com': 
+Enumerating objects: 1, done.
+Counting objects: 100% (1/1)Counting objects: 100% (1/1), done.
+Writing objects: 100% (1/1)Writing objects: 100% (1/1), 202 bytes | 202.00 KiB/s, done.
+Total 1 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/ADNANALI08/MLOPS2.git
+   bc865f6..4ac8c48  dev -> dev
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mwhich python3[27mwhich python3
+[?2004l/usr/bin/python3
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mgit checkout dev[27mgit checkout dev
+[?2004lM	{
+Already on 'dev'
+[?2004h]0;dell@DESKTOP-EF1F28B: ~/MLOPS2[01;32mdell@DESKTOP-EF1F28B[00m:[01;34m~/MLOPS2[00m$ [7mcat > vars/mlUtils.groovy << 'EOF'[27m
+[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Ccat
