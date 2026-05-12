@@ -1,4 +1,5 @@
-@Library('mlops-shared-lib') _
+MEM
+@
 
 pipeline {
     agent any
@@ -34,10 +35,5 @@ pipeline {
     }
     post {
         success {
-            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }
-        }
-        failure {
-            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }
-        }
-    }
-}
+            script { n
+
