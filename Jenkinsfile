@@ -15,7 +15,7 @@ pipeline {
         stage('Data Ingest') {
             steps {
                 echo 'Starting Data Ingestion...'
-                sh "./venv/bin/python src/ingest.py"
+                sh "./venv/bin/python src/data_ingest.py"
             }
         }
         
