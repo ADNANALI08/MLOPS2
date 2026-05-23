@@ -1,26 +1,22 @@
-pipeline {
-    agent any
+@Library('mlops-shared-lib') _
 
-    stages {
-        stage('Data Ingest') {
-            steps {
-                echo 'Ingesting data...'
-                sh "./venv/bin/python src/stage_01_data_ingest.py"
-            }
-        }
+node {
+    // Step 1: Secure a workspace and pull latest code
+    checkout scm
+    def jenkinsfile_to_load = ""
 
-        stage('Model Train') {
-            steps {
-                echo 'Training model...'
-                sh "./venv/bin/python src/stage_02_model_train.py"
-            }
-        }
-
-        stage('Model Deploy') {
-            steps {
-                echo 'Deploying model...'
-                sh "./venv/bin/python src/stage_03_model_deploy.py"
-            }
-        }
+    // Step 2: Set the correct file mapping based on the active branch
+    if (env.BRANCH_NAME == 'dev') {
+        jenkinsfile_to_load = "Jenkinsfile.dev"
+    } else if (env.BRANCH_NAME == 'main') {
+        jenkinsfile_to_load = "Jenkinsfile.preprod"
+    } else if (env.TAG_NAME?.startsWith('v')) {
+        jenkinsfile_to_load = "Jenkinsfile.prod"
+    } else {
+        currentBuild.result = 'ABORTED'
+        error("No pipeline defined for branch: ${env.BRANCH_NAME}")
     }
+
+    // Step 3: Safely execute the sub-pipeline file within this workspace
+    load jenkinsfile_to_load
 }
