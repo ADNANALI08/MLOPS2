@@ -2,31 +2,41 @@ pipeline {
     agent any
 
     stages {
+        stage('Setup Environment') {
+            steps {
+                echo 'Creating Jenkins virtual environment and installing libraries...'
+                sh '''
+                python3 -m venv venv
+                ./venv/bin/pip install mlflow scikit-learn pandas numpy
+                '''
+            }
+        }
+        
         stage('Data Ingest') {
             steps {
                 echo 'Starting Data Ingestion...'
-                sh "/home/dell/MLOPS2/venv/bin/python src/stage_01_data_ingest.py"
+                sh "./venv/bin/python src/stage_01_data_ingest.py"
             }
         }
         
         stage('Model Train') {
             steps {
                 echo 'Starting Model Training...'
-                sh "/home/dell/MLOPS2/venv/bin/python src/stage_02_model_train.py"
+                sh "./venv/bin/python src/stage_02_model_train.py"
             }
         }
         
         stage('Model Deploy - MLflow') {
             steps {
                 echo 'Logging to MLflow...'
-                sh "/home/dell/MLOPS2/venv/bin/python src/stage_03_model_deploy.py"
+                sh "./venv/bin/python src/stage_03_model_deploy.py"
             }
         }
         
         stage('Model Test') {
             steps {
                 echo 'Testing Model...'
-                sh "/home/dell/MLOPS2/venv/bin/python src/test_model.py"
+                sh "./venv/bin/python src/test_model.py"
             }
         }
     }
