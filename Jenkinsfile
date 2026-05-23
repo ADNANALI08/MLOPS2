@@ -1,4 +1,4 @@
-@Library('mlops-shared-lib') _
+// @Library('mlops-shared-lib') _
 
 node {
     // Step 1: Secure a workspace and pull latest code
