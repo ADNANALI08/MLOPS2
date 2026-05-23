@@ -5,30 +5,28 @@ pipeline {
         stage('Data Ingest') {
             steps {
                 echo 'Starting Data Ingestion...'
-                sh "./venv/bin/python src/stage_01_data_ingest.py"
+                sh "/home/dell/MLOPS2/venv/bin/python src/stage_01_data_ingest.py"
             }
         }
         
         stage('Model Train') {
             steps {
                 echo 'Starting Model Training...'
-                sh "./venv/bin/python src/stage_02_model_train.py"
+                sh "/home/dell/MLOPS2/venv/bin/python src/stage_02_model_train.py"
             }
         }
         
         stage('Model Deploy - MLflow') {
             steps {
                 echo 'Logging to MLflow...'
-                // Update this script name if it is different in your src folder!
-                sh "./venv/bin/python src/stage_03_model_deploy.py"
+                sh "/home/dell/MLOPS2/venv/bin/python src/stage_03_model_deploy.py"
             }
         }
         
         stage('Model Test') {
             steps {
                 echo 'Testing Model...'
-                // Update this script name if it is different in your src folder!
-                sh "./venv/bin/python src/test_model.py"
+                sh "/home/dell/MLOPS2/venv/bin/python src/test_model.py"
             }
         }
     }
