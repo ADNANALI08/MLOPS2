@@ -20,16 +20,11 @@ mlflow.set_tracking_uri(tracking_uri)
 
 
 def train_model():
-                 mlflow.set_tracking_uri("file://" + os.path.join(os.getcwd(), "mlruns"))
-                    
-               EXPERIMENT_NAME = "iris-random-forest"
+ tracking_uri = "file://" + os.path.join(os.getcwd(), "mlruns")
+    mlflow.set_tracking_uri(tracking_uri)
+    EXPERIMENT_NAME = "iris-random-forest"
     mlflow.set_experiment(EXPERIMENT_NAME)
 
-
-
-
-    mlflow.set_tracking_uri(MLFLOW_URI)
-    mlflow.set_experiment(EXPERIMENT_NAME)
 
 
 
