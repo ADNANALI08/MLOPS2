@@ -1,19 +1,26 @@
-@Library('mlops-shared-lib') _
+pipeline {
+    agent any
 
-node {
-    checkout scm
-    def jenkinsfile_to_load = ""
+    stages {
+        stage('Data Ingest') {
+            steps {
+                echo 'Ingesting data...'
+                sh "./venv/bin/python src/stage_01_data_ingest.py"
+            }
+        }
 
-    if (env.BRANCH_NAME == 'dev') {
-        jenkinsfile_to_load = "Jenkinsfile.dev"
-    } else if (env.BRANCH_NAME == 'main') {
-        jenkinsfile_to_load = "Jenkinsfile.preprod"
-    } else if (env.TAG_NAME?.startsWith('v')) {
-        jenkinsfile_to_load = "Jenkinsfile.prod"
-    } else {
-        currentBuild.result = 'ABORTED'
-        error("No pipeline defined for branch: ${env.BRANCH_NAME}")
+        stage('Model Train') {
+            steps {
+                echo 'Training model...'
+                sh "./venv/bin/python src/stage_02_model_train.py"
+            }
+        }
+
+        stage('Model Deploy') {
+            steps {
+                echo 'Deploying model...'
+                sh "./venv/bin/python src/stage_03_model_deploy.py"
+            }
+        }
     }
-
-    load jenkinsfile_to_load
 }
