@@ -1,10 +1,11 @@
 import mlflow
+import os
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pandas as pd
-import os
+
 
 MLFLOW_URI = "http://localhost:5000"
 EXPERIMENT_NAME = "iris-random-forest"
@@ -19,8 +20,18 @@ mlflow.set_tracking_uri(tracking_uri)
 
 
 def train_model():
+                 mlflow.set_tracking_uri("file://" + os.path.join(os.getcwd(), "mlruns"))
+                    
+               EXPERIMENT_NAME = "iris-random-forest"
+    mlflow.set_experiment(EXPERIMENT_NAME)
+
+
+
+
     mlflow.set_tracking_uri(MLFLOW_URI)
     mlflow.set_experiment(EXPERIMENT_NAME)
+
+
 
     df = pd.read_csv('data/iris.csv')
     X = df.drop('target', axis=1)
