@@ -15,21 +15,21 @@ pipeline {
         stage('Data Ingest') {
             steps {
                 echo 'Starting Data Ingestion...'
-                sh "./venv/bin/python src/stage_01_data_ingest.py"
+                sh "./venv/bin/python src/ingest.py"
             }
         }
         
         stage('Model Train') {
             steps {
                 echo 'Starting Model Training...'
-                sh "./venv/bin/python src/stage_02_model_train.py"
+                sh "./venv/bin/python src/train.py"
             }
         }
         
         stage('Model Deploy - MLflow') {
             steps {
                 echo 'Logging to MLflow...'
-                sh "./venv/bin/python src/stage_03_model_deploy.py"
+                sh "./venv/bin/python src/deploy.py"
             }
         }
         
