@@ -4,9 +4,19 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pandas as pd
+import os
 
 MLFLOW_URI = "http://localhost:5000"
 EXPERIMENT_NAME = "iris-random-forest"
+
+
+# Now your existing code will work without needing port 5000
+mlflow.set_experiment("iris-random-forest")
+
+# Create a local directory for tracking if it doesn't exist
+tracking_uri = "file://" + os.path.join(os.getcwd(), "mlruns")
+mlflow.set_tracking_uri(tracking_uri)
+
 
 def train_model():
     mlflow.set_tracking_uri(MLFLOW_URI)
