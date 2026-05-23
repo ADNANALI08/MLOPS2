@@ -1,22 +1,55 @@
-// @Library('mlops-shared-lib') _
+pipeline {
+    agent any
 
-node {
-    // Step 1: Secure a workspace and pull latest code
-    checkout scm
-    def jenkinsfile_to_load = ""
-
-    // Step 2: Set the correct file mapping based on the active branch
-    if (env.BRANCH_NAME == 'dev') {
-        jenkinsfile_to_load = "Jenkinsfile.dev"
-    } else if (env.BRANCH_NAME == 'main') {
-        jenkinsfile_to_load = "Jenkinsfile.preprod"
-    } else if (env.TAG_NAME?.startsWith('v')) {
-        jenkinsfile_to_load = "Jenkinsfile.prod"
-    } else {
-        currentBuild.result = 'ABORTED'
-        error("No pipeline defined for branch: ${env.BRANCH_NAME}")
+    stages {
+        stage('Setup Environment') {
+            steps {
+                echo 'Creating Jenkins virtual environment and installing libraries...'
+                sh '''
+                python3 -m venv venv
+                ./venv/bin/pip install mlflow scikit-learn pandas numpy
+                '''
+            }
+        }
+        
+        stage('Data Ingest') {
+            steps {
+                echo 'Starting Data Ingestion...'
+                sh "./venv/bin/python src/stage_01_data_ingest.py"
+            }
+        }
+        
+        stage('Model Train') {
+            steps {
+                echo 'Starting Model Training...'
+                sh "./venv/bin/python src/stage_02_model_train.py"
+            }
+        }
+        
+        stage('Model Deploy - MLflow') {
+            steps {
+                echo 'Logging to MLflow...'
+                sh "./venv/bin/python src/stage_03_model_deploy.py"
+            }
+        }
+        
+        stage('Model Test') {
+            steps {
+                echo 'Testing Model...'
+                sh "./venv/bin/python src/test_model.py"
+            }
+        }
     }
 
-    // Step 3: Safely execute the sub-pipeline file within this workspace
-    load jenkinsfile_to_load
+    post {
+        always {
+            echo "Pipeline run complete! (Email notifications disabled for local run)"
+        }
+        success {
+            echo "Build Successful! Ready for Pre-Prod."
+        }
+        failure {
+            echo "Build Failed. Check the logs."
+        }
+    }
 }
