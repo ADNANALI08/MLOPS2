@@ -1,41 +1,47 @@
 pipeline {
     agent any
-    environment {
-        MLFLOW_TRACKING_URI = "http://localhost:5000"
-    }
+
     stages {
         stage('Data Ingest') {
-            steps { script { mlUtils.ingestData() } }
+            steps {
+                echo 'Starting Data Ingestion...'
+                sh "./venv/bin/python src/stage_01_data_ingest.py"
+            }
         }
+        
         stage('Model Train') {
-            steps { script { mlUtils.trainModel() } }
+            steps {
+                echo 'Starting Model Training...'
+                sh "./venv/bin/python src/stage_02_model_train.py"
+            }
         }
+        
         stage('Model Deploy - MLflow') {
             steps {
-                script {
-                    def runId = mlUtils.getRunId()
-                    mlUtils.deployModel("runs:/${runId}/model")
-                }
+                echo 'Logging to MLflow...'
+                // Update this script name if it is different in your src folder!
+                sh "./venv/bin/python src/stage_03_model_deploy.py"
             }
         }
+        
         stage('Model Test') {
             steps {
-                script {
-                    def runId = mlUtils.getRunId()
-                    mlUtils.testModel("runs:/${runId}/model")
-                }
+                echo 'Testing Model...'
+                // Update this script name if it is different in your src folder!
+                sh "./venv/bin/python src/test_model.py"
             }
         }
-        stage('Save Model - Challenger') {
-            steps { script { mlUtils.registerModel('Challenger') } }
-        }
     }
+
     post {
+        always {
+            echo "Pipeline run complete! (Email notifications disabled for local run)"
+        }
         success {
-            script { notifyEmail('SUCCESS', 'Dev', 'Model Test') }
+            echo "Build Successful! Ready for Pre-Prod."
         }
         failure {
-            script { notifyEmail('FAILURE', 'Dev', 'Model Test') }
+            echo "Build Failed. Check the logs."
         }
     }
 }
