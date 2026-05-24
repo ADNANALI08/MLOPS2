@@ -27,7 +27,7 @@ pipeline {
         stage('Start MLflow Server') {
             steps {
                 echo 'Starting MLflow Tracking Server with SQLite backend...'
-                // Running it in the background using 'BUILD_ID=dontKillMe' so Jenkins doesn't kill it immediately
+                // Launches server safely in background so Jenkins agent doesn't kill it immediately
                 sh """
                 BUILD_ID=dontKillMe ${VENV_PATH}/bin/mlflow server \
                     --backend-store-uri sqlite:///mlflow.db \
