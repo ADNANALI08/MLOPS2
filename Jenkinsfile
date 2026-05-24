@@ -29,7 +29,7 @@ pipeline {
         stage('Model Deploy - MLflow') {
             steps {
                 echo 'Logging to MLflow...'
-                sh "./venv/bin/python src/deploy_model.py"
+                sh "./venv/bin/python src/deploy.py"
             }
         }
         
