@@ -27,7 +27,6 @@ pipeline {
         stage('Start MLflow Server') {
             steps {
                 echo 'Starting MLflow Tracking Server with SQLite backend...'
-                // This fixes the 500 Internal Server Error you saw in the terminal
                 sh """
                 BUILD_ID=dontKillMe ${VENV_PATH}/bin/mlflow server \
                     --backend-store-uri sqlite:///mlflow.db \
