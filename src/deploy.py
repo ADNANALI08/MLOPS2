@@ -34,5 +34,40 @@ def deploy_model(model_uri, port=6000):
         sys.exit(1)
 
 if __name__ == "__main__":
-    model_uri = sys.argv[1]
+    # Check if an argument was passed via CLI; if not, pull the latest active run from MLflow
+    if len(sys.argv) > 1:
+        model_uri = sys.argv[1]
+    else:
+        print("[DEPLOY] No model URI passed as argument. Fetching latest run from MLflow tracking server...")
+        try:
+            mlflow.set_tracking_uri(MLFLOW_URI)
+            client = MlflowClient()
+            
+            # Find the experiment ID for your model
+            experiment = client.get_experiment_by_name(MODEL_NAME)
+            if experiment is None:
+                # If experiment name doesn't match iris-classifier, fall back to Default experiment (ID: '0')
+                experiment_id = "0"
+            else:
+                experiment_id = experiment.experiment_id
+
+            # Search for the latest successful run in that experiment
+            runs = client.search_runs(
+                experiment_ids=[experiment_id],
+                max_results=1,
+                order_by=["attributes.start_time DESC"]
+            )
+
+            if not runs:
+                raise ValueError(f"No runs found in MLflow experiment ID: {experiment_id}")
+
+            latest_run_id = runs[0].info.run_id
+            model_uri = f"runs:/{latest_run_id}/model"
+            print(f"[DEPLOY] Found latest run ID: {latest_run_id}. Using URI: {model_uri}")
+
+        except Exception as e:
+            print(f"[DEPLOY ERROR] Failed to auto-detect latest MLflow run: {e}")
+            print("[DEPLOY] Ensure your MLflow tracking server is running at http://localhost:5000")
+            sys.exit(1)
+
     deploy_model(model_uri)
